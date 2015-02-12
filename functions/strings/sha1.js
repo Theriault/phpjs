@@ -26,7 +26,7 @@ function sha1(str) {
     }
     return str;
   };*/
-
+  
   var cvt_hex = function (val) {
     var str = '';
     var i;
@@ -48,8 +48,14 @@ function sha1(str) {
   var H3 = 0x10325476;
   var H4 = 0xC3D2E1F0;
   var A, B, C, D, E;
-  var temp;
-
+  var t = 0x0ffffffff;
+  var z = function (temp) {
+    E = D;
+    D = C;
+    C = rotate_left(B, 30);
+    B = A;
+    A = temp;
+  };
   // utf8_encode
   str = unescape(encodeURIComponent(str));
   var str_len = str.length;
@@ -99,47 +105,19 @@ function sha1(str) {
     D = H3;
     E = H4;
 
-    for (i = 0; i <= 19; i++) {
-      temp = (rotate_left(A, 5) + ((B & C) | (~B & D)) + E + W[i] + 0x5A827999) & 0x0ffffffff;
-      E = D;
-      D = C;
-      C = rotate_left(B, 30);
-      B = A;
-      A = temp;
-    }
+    for (i = 0; i <= 19; z((rotate_left(A, 5) + ((B & C) | (~B & D)) + E + W[i] + 0x5A827999) & t), i++);
+    
+    for (i = 20; i <= 39; z((rotate_left(A, 5) + (B ^ C ^ D) + E + W[i] + 0x6ED9EBA1) & t), i++);
 
-    for (i = 20; i <= 39; i++) {
-      temp = (rotate_left(A, 5) + (B ^ C ^ D) + E + W[i] + 0x6ED9EBA1) & 0x0ffffffff;
-      E = D;
-      D = C;
-      C = rotate_left(B, 30);
-      B = A;
-      A = temp;
-    }
+    for (i = 40; i <= 59; z((rotate_left(A, 5) + ((B & C) | (B & D) | (C & D)) + E + W[i] + 0x8F1BBCDC) & t), i++);
+;
+    for (i = 60; i <= 79; z((rotate_left(A, 5) + (B ^ C ^ D) + E + W[i] + 0xCA62C1D6) & t), i++);
 
-    for (i = 40; i <= 59; i++) {
-      temp = (rotate_left(A, 5) + ((B & C) | (B & D) | (C & D)) + E + W[i] + 0x8F1BBCDC) & 0x0ffffffff;
-      E = D;
-      D = C;
-      C = rotate_left(B, 30);
-      B = A;
-      A = temp;
-    }
-
-    for (i = 60; i <= 79; i++) {
-      temp = (rotate_left(A, 5) + (B ^ C ^ D) + E + W[i] + 0xCA62C1D6) & 0x0ffffffff;
-      E = D;
-      D = C;
-      C = rotate_left(B, 30);
-      B = A;
-      A = temp;
-    }
-
-    H0 = (H0 + A) & 0x0ffffffff;
-    H1 = (H1 + B) & 0x0ffffffff;
-    H2 = (H2 + C) & 0x0ffffffff;
-    H3 = (H3 + D) & 0x0ffffffff;
-    H4 = (H4 + E) & 0x0ffffffff;
+    H0 = (H0 + A) & t;
+    H1 = (H1 + B) & t;
+    H2 = (H2 + C) & t;
+    H3 = (H3 + D) & t;
+    H4 = (H4 + E) & t;
   }
 
   temp = cvt_hex(H0) + cvt_hex(H1) + cvt_hex(H2) + cvt_hex(H3) + cvt_hex(H4);
